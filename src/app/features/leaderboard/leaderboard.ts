@@ -54,7 +54,7 @@ import { TimeAgoPipe } from '../../shared/pipes';
                     <td class="mono">{{ fmt.formatDifficulty(t.difficulty) }}</td>
                     <td>{{ t.userAgent || '—' }}</td>
                     <td>{{ t.externalPoolName || '—' }}</td>
-                    <td class="muted" [title]="t.time | date: 'medium'">{{ t.time | timeAgo }}</td>
+                    <td class="muted" [title]="t.time | date: 'MMM d, y, HH:mm:ss'">{{ t.time | timeAgo }}</td>
                   </tr>
                 }
               </tbody>

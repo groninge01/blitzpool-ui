@@ -4,7 +4,7 @@ import { ChartConfiguration } from 'chart.js';
 import { ClientApi } from '../../core/api/client.service';
 import { RangeParam, RejectedSlot, SlotCounts } from '../../core/api/models';
 import { poll } from '../../shared/poll';
-import { ChartComponent } from '../../shared/chart.component';
+import { ChartComponent, TIME_SCALE_24H } from '../../shared/chart.component';
 import { RangeSelectComponent } from '../../shared/range-select.component';
 import { EmptyComponent } from '../../shared/empty.component';
 import { formatCount, formatDifficulty } from '../../shared/format';
@@ -32,6 +32,7 @@ function baseOptions(yLabel: (v: number) => string): ChartConfiguration['options
     scales: {
       x: {
         type: 'time',
+        time: TIME_SCALE_24H,
         ticks: { color: '#a8a29e', maxTicksLimit: 8 },
         grid: { color: 'rgba(128,128,128,0.12)' },
       },

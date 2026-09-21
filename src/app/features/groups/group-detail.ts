@@ -18,7 +18,7 @@ import { GroupsApi } from '../../core/api/groups.service';
 import { LocalStore } from '../../core/state/local.store';
 import { JoinRequestEntry, OpenInviteStatus, RangeParam } from '../../core/api/models';
 import { poll } from '../../shared/poll';
-import { ChartComponent } from '../../shared/chart.component';
+import { ChartComponent, TIME_SCALE_24H } from '../../shared/chart.component';
 import { RangeSelectComponent } from '../../shared/range-select.component';
 import { EmptyComponent } from '../../shared/empty.component';
 import { formatCount, formatDifficulty, formatHashrate, formatSats, timeAgo } from '../../shared/format';
@@ -165,7 +165,7 @@ export class GroupDetailComponent {
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          x: { type: 'time', ticks: { color: '#a8a29e', maxTicksLimit: 8 }, grid: { color: 'rgba(128,128,128,0.12)' } },
+          x: { type: 'time', time: TIME_SCALE_24H, ticks: { color: '#a8a29e', maxTicksLimit: 8 }, grid: { color: 'rgba(128,128,128,0.12)' } },
           y: { beginAtZero: true, ticks: { color: '#a8a29e', callback: (v) => formatHashrate(Number(v)) }, grid: { color: 'rgba(128,128,128,0.12)' } },
         },
       },
