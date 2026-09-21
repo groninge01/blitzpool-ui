@@ -84,22 +84,8 @@
   color: var(--mat-sys-error);
 }
 
-/* Home stats: fixed 3-across grid (two rows of six cards). */
-.card-grid {
-  grid-template-columns: repeat(3, 1fr);
-}
-
 @media (max-width: 900px) {
   .two-col {
-    grid-template-columns: 1fr;
-  }
-  .card-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 560px) {
-  .card-grid {
     grid-template-columns: 1fr;
   }
 }

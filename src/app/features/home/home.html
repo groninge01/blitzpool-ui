@@ -43,7 +43,7 @@
     }
   }
 
-  <section class="card-grid">
+  <section class="card-grid cols-3">
     <div class="stat-card">
       <div class="stat-label">Pool hashrate</div>
       <div class="stat-value">{{ fmt.formatHashrate(pool.value()?.totalHashRate ?? 0) }}</div>
@@ -65,9 +65,9 @@
     </div>
     <div class="stat-card">
       <div class="stat-label">Next block reward</div>
-      <div class="stat-value">{{ fmt.formatSats(reward.value()?.rewardSats) }}</div>
+      <div class="stat-value">{{ fmt.formatBtc(reward.value()?.rewardSats) }}</div>
       @if (reward.value(); as r) {
-        <div class="stat-sub">{{ fmt.formatSats(r.feeSats) }} in fees · height {{ r.height }}</div>
+        <div class="stat-sub">{{ fmt.formatBtc(r.feeSats) }} in fees · height {{ r.height }}</div>
       }
     </div>
     <div class="stat-card">

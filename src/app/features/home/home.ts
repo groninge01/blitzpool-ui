@@ -15,10 +15,10 @@ import { ChartComponent, TIME_SCALE_24H } from '../../shared/chart.component';
 import { RangeSelectComponent } from '../../shared/range-select.component';
 import { EmptyComponent } from '../../shared/empty.component';
 import {
+  formatBtc,
   formatCount,
   formatDifficulty,
   formatHashrate,
-  formatSats,
   timeAgo,
 } from '../../shared/format';
 import { AvgTimeToBlockPipe, TimeAgoPipe, MaskAddressPipe } from '../../shared/pipes';
@@ -52,7 +52,7 @@ export class HomeComponent {
   private readonly accountApi = inject(AccountApi);
   protected readonly config = inject(ConfigService);
 
-  protected readonly fmt = { formatHashrate, formatCount, formatDifficulty, formatSats, timeAgo };
+  protected readonly fmt = { formatHashrate, formatCount, formatDifficulty, formatBtc, timeAgo };
 
   protected readonly pool = poll({ intervalMs: 30_000, stream: () => this.poolApi.pool() });
   protected readonly info = poll({ intervalMs: 60_000, stream: () => this.poolApi.info() });

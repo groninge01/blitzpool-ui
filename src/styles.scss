@@ -100,6 +100,23 @@ a:hover {
   margin-bottom: 24px;
 }
 
+/* Fixed 3-across variant — two rows of six stat cards. */
+.card-grid.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 900px) {
+  .card-grid.cols-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .card-grid.cols-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
 .stat-card {
   padding: 16px 20px;
   border-radius: 12px;
