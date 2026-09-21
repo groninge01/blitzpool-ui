@@ -38,16 +38,33 @@ $ pm2 serve --spa dist/blitzpool-ui/ 3335 --name ui
 
 ## Docker
 
+### Compose (recommended)
+
+`docker-compose.yml` runs the UI standalone on the external `blitzpool`
+network created by `blitzpool-server-rust/full-setup/docker-compose.yml`:
+
+```bash
+$ docker compose up -d --build
+```
+
+Caddy reverse-proxies `/api/*` to `API_UPSTREAM` (default
+`blitzpool-api:3334`) in-network, so browsers only ever talk to the UI
+container — no API URL needs to be exposed publicly.
+
+### Plain docker
+
 ```bash
 $ docker build -t blitzpool-ui .
 $ docker run --name blitzpool-ui --rm -p 8080:80 \
-    -e BLITZPOOL_API_URL=http://your-api-host:3334 \
+    --network blitzpool \
+    -e API_UPSTREAM=blitzpool-api:3334 \
     blitzpool-ui
 ```
 
 The site will be accessible on [http://localhost:8080](http://localhost:8080). Caddy listens on port 80 inside the container; binding it to 8080 lets you run the image without root.
 
 Available variables:
-* `BLITZPOOL_API_URL`, `BLITZPOOL_STRATUM_URL`, `BLITZPOOL_SECURE_STRATUM_URL`, `BLITZPOOL_STRATUM_V2_URL`, `BLITZPOOL_PPLNS_*` – injected into the runtime config
+* `API_UPSTREAM` – in-network `host:port` for the `/api` reverse proxy (default: `blitzpool-api:3334`)
+* `BLITZPOOL_API_URL`, `BLITZPOOL_STRATUM_URL`, `BLITZPOOL_SECURE_STRATUM_URL`, `BLITZPOOL_STRATUM_V2_URL`, `BLITZPOOL_PPLNS_*` – injected into the runtime config; only needed to override the same-origin proxy or advertise public stratum endpoints
 * `LOGLEVEL`: loglevel in stdout (default: `INFO`)
 * `LOGFORMAT`: log format in stdout (default: `json`)

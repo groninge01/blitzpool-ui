@@ -28,6 +28,7 @@ EOF
 if [ ! -e "/etc/Caddyfile" ]; then
     sed -i "s#%%LOGLEVEL%%#${LOGLEVEL:-INFO}#g" /etc/Caddyfile.tpl
     sed -i "s#%%LOGFORMAT%%#${LOGFORMAT:-json}#g" /etc/Caddyfile.tpl
+    sed -i "s#%%API_UPSTREAM%%#${API_UPSTREAM:-blitzpool-api:3334}#g" /etc/Caddyfile.tpl
     mv /etc/Caddyfile.tpl /etc/Caddyfile
 else
     rm -f /etc/Caddyfile.tpl
