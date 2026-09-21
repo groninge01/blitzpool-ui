@@ -1,0 +1,39 @@
+<mat-toolbar class="topbar">
+  <a routerLink="/" class="brand">
+    <mat-icon>bolt</mat-icon>
+    <span>Blitzpool</span>
+  </a>
+
+  <nav class="nav-links">
+    <a mat-button routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Pool</a>
+    <a mat-button routerLink="/groups" routerLinkActive="active">Groups</a>
+    <a mat-button routerLink="/network" routerLinkActive="active">Network</a>
+    <a mat-button routerLink="/leaderboard" routerLinkActive="active">Leaderboard</a>
+  </nav>
+
+  <form class="search" (ngSubmit)="go()">
+    <mat-form-field subscriptSizing="dynamic" appearance="outline">
+      <input
+        matInput
+        [formControl]="search"
+        placeholder="Miner address…"
+        aria-label="Miner address"
+        spellcheck="false"
+        autocomplete="off"
+      />
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+  </form>
+
+  <button mat-icon-button (click)="toggleTheme()" [matTooltip]="'Toggle theme'" aria-label="Toggle theme">
+    <mat-icon>{{ themeIcon() }}</mat-icon>
+  </button>
+</mat-toolbar>
+
+@if (searchInvalid()) {
+  <div class="search-error">That doesn't look like a valid Bitcoin address.</div>
+}
+
+<main class="content">
+  <router-outlet />
+</main>

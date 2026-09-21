@@ -48,11 +48,11 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/${{ github.repository_owner }}/public-pool-ui:latest
-            ghcr.io/${{ github.repository_owner }}/public-pool-ui:${{ steps.get_short_sha.outputs.sha_short }}
+            ghcr.io/${{ github.repository_owner }}/blitzpool-ui:latest
+            ghcr.io/${{ github.repository_owner }}/blitzpool-ui:${{ steps.get_short_sha.outputs.sha_short }}
           labels: |
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}
             org.opencontainers.image.revision=${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/public-pool-ui:latest
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/blitzpool-ui:latest
           cache-to: type=inline

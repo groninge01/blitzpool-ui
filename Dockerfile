@@ -16,8 +16,8 @@ WORKDIR /build
 
 COPY . .
 
-# Build Public Pool UI using NPM
-RUN npm i && npm run build
+# Build Blitzpool UI using NPM
+RUN npm ci && npm run build
 
 ############################
 # Docker final environment #
@@ -28,7 +28,7 @@ FROM caddy:alpine AS final
 EXPOSE 80
 WORKDIR /var/www/html
 
-COPY --from=build /build/dist/public-pool-ui .
+COPY --from=build /build/dist/blitzpool-ui/browser .
 COPY docker/Caddyfile.tpl /etc/Caddyfile.tpl
 COPY docker/entrypoint.sh /entrypoint.sh
 

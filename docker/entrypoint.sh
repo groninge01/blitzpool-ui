@@ -8,19 +8,20 @@ write_runtime_config() {
     config="{"
     separator=""
 
-    if [ "${PUBLIC_POOL_API_URL+x}" ]; then
-        config="${config}${separator}\"API_URL\":\"$(js_escape "$PUBLIC_POOL_API_URL")\""
-        separator=","
-    fi
-
-    if [ "${PUBLIC_POOL_STRATUM_URL+x}" ]; then
-        config="${config}${separator}\"STRATUM_URL\":\"$(js_escape "$PUBLIC_POOL_STRATUM_URL")\""
-    fi
+    for key in API_URL STRATUM_URL SECURE_STRATUM_URL STRATUM_V2_URL \
+        PPLNS_STRATUM_URL PPLNS_SECURE_STRATUM_URL PPLNS_STRATUM_V2_URL PPLNS_DATUM_URL; do
+        eval "value=\${BLITZPOOL_${key}+x}"
+        if [ -n "$value" ]; then
+            eval "raw=\$BLITZPOOL_${key}"
+            config="${config}${separator}\"${key}\":\"$(js_escape "$raw")\""
+            separator=","
+        fi
+    done
 
     config="${config}}"
 
     cat > /var/www/html/assets/runtime-config.js <<EOF
-window.__PUBLIC_POOL_CONFIG__ = ${config};
+window.__BLITZPOOL_CONFIG__ = ${config};
 EOF
 }
 

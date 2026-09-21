@@ -1,53 +1,53 @@
-# PublicPoolUi
+# BlitzpoolUi
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.0.3.
+Web UI for [blitzpool-server-rust](https://github.com/warioishere/blitzpool-server-rust), built with Angular and Angular Material.
 
 ## Dependencies
 
-Requires [Public-Pool](https://github.com/benjamin-wilson/public-pool) to be running
+Requires `blitzpool-server-rust` to be running (API on port `3334` by default).
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Run `npm start` for a dev server on `http://localhost:4200/`. API requests to `/api/*` are proxied per `proxy.config.local.json` (defaults to `http://localhost:3334`).
 
 ## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Run `npm run build`. Artifacts are written to `dist/blitzpool-ui/`.
 
 ## Running unit tests
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Run `npm test` (Vitest).
 
-## Running end-to-end tests
+## Runtime configuration
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+The app reads `assets/runtime-config.js` at startup, which may define `window.__BLITZPOOL_CONFIG__` with any of:
 
-## Further help
+* `API_URL` – base URL of the blitzpool API (e.g. `http://localhost:3334`); empty means same origin
+* `STRATUM_URL`, `SECURE_STRATUM_URL`, `STRATUM_V2_URL`
+* `PPLNS_STRATUM_URL`, `PPLNS_SECURE_STRATUM_URL`, `PPLNS_STRATUM_V2_URL`, `PPLNS_DATUM_URL`
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+When running in Docker these are sourced from `BLITZPOOL_API_URL`, `BLITZPOOL_STRATUM_URL`, etc. When deployed to Cloudflare Pages, set the same `BLITZPOOL_*` env vars and the Pages Function in `functions/assets/runtime-config.js.ts` serves them.
 
 ## Deployment
 
 Install pm2 (https://pm2.keymetrics.io/)
 
 ```bash
-$ pm2 serve --spa dist/public-pool-ui/ 3335 --name ui
+$ pm2 serve --spa dist/blitzpool-ui/ 3335 --name ui
 ```
 
 ## Docker
 
 ```bash
-$ docker build -t public-pool-ui .
-$ docker run --name public-pool-ui --rm -p 8080:80 public-pool-ui
+$ docker build -t blitzpool-ui .
+$ docker run --name blitzpool-ui --rm -p 8080:80 \
+    -e BLITZPOOL_API_URL=http://your-api-host:3334 \
+    blitzpool-ui
 ```
 
-From Docker commands, website will be accessible on [http://localhost:8080](http://localhost:8080). By default Caddy server listen on port 80, but we bind it to port 8080 which allows you to launch image without root permissions.
+The site will be accessible on [http://localhost:8080](http://localhost:8080). Caddy listens on port 80 inside the container; binding it to 8080 lets you run the image without root.
 
 Available variables:
-* `DOMAIN`: website domain (default: `localhost`)
+* `BLITZPOOL_API_URL`, `BLITZPOOL_STRATUM_URL`, `BLITZPOOL_SECURE_STRATUM_URL`, `BLITZPOOL_STRATUM_V2_URL`, `BLITZPOOL_PPLNS_*` – injected into the runtime config
 * `LOGLEVEL`: loglevel in stdout (default: `INFO`)
 * `LOGFORMAT`: log format in stdout (default: `json`)

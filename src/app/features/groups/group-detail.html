@@ -1,0 +1,300 @@
+<div class="page">
+  <a routerLink="/groups" class="back-link"><mat-icon>arrow_back</mat-icon> Groups</a>
+
+  @if (group(); as g) {
+    <header class="gd-head">
+      <h1 class="page-title">{{ g.name }}</h1>
+      <div class="badges">
+        <span class="badge" [class.badge-primary]="g.active">{{ g.active ? 'active' : 'inactive' }}</span>
+        <span class="badge">{{ g.mode === 'window' ? 'window' : 'proportional' }}</span>
+        @if (g.isPublic) { <span class="badge">public</span> }
+        @if (adminToken()) { <span class="badge badge-primary">admin</span> }
+      </div>
+    </header>
+    <p class="muted">
+      created {{ g.createdAt | timeAgo }}
+      @if (g.nextResetAt) { · next round reset {{ g.nextResetAt | timeAgo }} }
+      @if (g.resetRoundOnBlock) { · resets on block }
+      @if (g.finderBonusPpm) { · finder bonus {{ (g.finderBonusPpm / 10000).toFixed(2) }}% }
+    </p>
+
+    <section class="card-grid">
+      <div class="stat-card">
+        <div class="stat-label">Group hashrate</div>
+        <div class="stat-value">{{ fmt.formatHashrate(hashrate.value()?.totalHashrate ?? g.totalHashrate ?? 0) }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Members</div>
+        <div class="stat-value">
+          {{ detail.value()?.members?.length ?? publicDetail.value()?.memberCount ?? '—' }}{{ g.maxMembers ? ' / ' + g.maxMembers : '' }}
+        </div>
+      </div>
+      @if (bestDiff.value(); as b) {
+        <div class="stat-card">
+          <div class="stat-label">Round best difficulty</div>
+          <div class="stat-value">{{ fmt.formatDifficulty(b.bestDifficulty) }}</div>
+          <div class="stat-sub">{{ b.addressLabel ?? '—' }} {{ b.time ? '· ' + fmt.timeAgo(b.time) : '' }}</div>
+        </div>
+      }
+      @if (distribution.value(); as d) {
+        <div class="stat-card">
+          <div class="stat-label">Round shares</div>
+          <div class="stat-value">{{ fmt.formatCount(d.totalShares) }}</div>
+          <div class="stat-sub">{{ fmt.formatCount(d.totalRejected) }} rejected</div>
+        </div>
+      }
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Hashrate</h2>
+        <app-range-select [value]="range()" (valueChange)="range.set($event)" />
+      </div>
+      @if (chartConfig(); as cfg) { <app-chart [config]="cfg" /> }
+      @else { <app-empty message="No chart data" /> }
+    </section>
+
+    @if (timelineConfig(); as tc) {
+      <section class="panel">
+        <h2 class="panel-title">Window timeline ({{ timeline.value()?.windowDays ?? 0 }}d)</h2>
+        <app-chart [config]="tc" />
+      </section>
+    }
+
+    <div class="two-col">
+      <section class="panel">
+        <h2 class="panel-title">Members</h2>
+        @if (detail.value()?.members?.length) {
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr><th>Member</th><th>Role</th><th>Hashrate</th><th>Best diff</th><th>Last seen</th>
+                @if (isAdmin()) { <th></th> }</tr>
+              </thead>
+              <tbody>
+                @for (m of detail.value()!.members; track m.memberId) {
+                  <tr>
+                    <td class="mono">
+                      {{ m.address ?? m.addressLabel }}
+                      @if (m.isSelf) { <span class="badge badge-primary">you</span> }
+                      @if (m.verifiedVia) {
+                        <mat-icon class="verified" [matTooltip]="'Verified via ' + m.verifiedVia">verified</mat-icon>
+                      }
+                    </td>
+                    <td><span class="badge">{{ m.role }}</span></td>
+                    <td class="mono">{{ fmt.formatHashrate(m.hashrate) }}</td>
+                    <td class="mono">{{ fmt.formatDifficulty(m.bestDifficulty) }}</td>
+                    <td class="muted">{{ m.lastSeen ? (m.lastSeen! | timeAgo) : '—' }}</td>
+                    @if (isAdmin()) {
+                      <td>
+                        @if (m.address && m.role !== 'admin') {
+                          <button mat-icon-button color="warn" (click)="removeMember(m.address)" matTooltip="Remove member">
+                            <mat-icon>person_remove</mat-icon>
+                          </button>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <app-empty [loading]="detail.isLoading()" message="Member list unavailable" />
+        }
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Round distribution</h2>
+        @if (distribution.value()?.perAddress?.length) {
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Member</th><th>Shares</th><th>Share</th><th>Rejected</th></tr></thead>
+              <tbody>
+                @for (d of distribution.value()!.perAddress; track d.memberId) {
+                  <tr>
+                    <td class="mono">{{ d.addressLabel }}</td>
+                    <td class="mono">{{ fmt.formatCount(d.totalShares) }}</td>
+                    <td>{{ d.percent.toFixed(2) }}%</td>
+                    <td class="mono">{{ fmt.formatCount(d.totalRejected) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <app-empty [loading]="distribution.isLoading()" message="No shares this round" />
+        }
+      </section>
+    </div>
+
+    <section class="panel">
+      <h2 class="panel-title">Payout history</h2>
+      @if (history.value()?.length) {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Block</th><th>Member</th><th>Paid</th><th>Share</th><th>Type</th><th>When</th></tr></thead>
+            <tbody>
+              @for (h of history.value()!; track h.id) {
+                <tr>
+                  <td class="mono">#{{ h.blockHeight }}</td>
+                  <td class="mono">{{ h.addressLabel }}</td>
+                  <td class="mono">{{ h.paidSats | sats }}</td>
+                  <td>{{ h.percent.toFixed(2) }}%</td>
+                  <td><span class="badge">{{ h.rowType }}</span></td>
+                  <td class="muted">{{ h.createdAt | timeAgo }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <app-empty [loading]="history.isLoading()" message="No payouts yet" />
+      }
+    </section>
+
+    @if (!adminToken() && g.isPublic) {
+      <section class="panel">
+        <h2 class="panel-title">Request to join</h2>
+        <form [formGroup]="joinForm" (ngSubmit)="requestJoin()" class="inline-form">
+          <mat-form-field>
+            <mat-label>Your payout address</mat-label>
+            <input matInput formControlName="address" class="mono" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Message (optional)</mat-label>
+            <input matInput formControlName="message" />
+          </mat-form-field>
+          <button mat-flat-button color="primary" type="submit" [disabled]="joinForm.invalid || busy()">
+            Send request
+          </button>
+        </form>
+      </section>
+    }
+
+    @if (!adminToken()) {
+      <section class="panel">
+        <h2 class="panel-title">Admin access</h2>
+        <form [formGroup]="tokenForm" (ngSubmit)="applyToken()" class="inline-form">
+          <mat-form-field>
+            <mat-label>Admin token</mat-label>
+            <input matInput formControlName="token" class="mono" type="password" />
+          </mat-form-field>
+          <button mat-stroked-button type="submit">Use token</button>
+        </form>
+      </section>
+    } @else {
+      <section class="panel">
+        <h2 class="panel-title">Join requests</h2>
+        @if (joinRequests.value()?.length) {
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Address</th><th>Message</th><th>Status</th><th>Requested</th><th></th></tr></thead>
+              <tbody>
+                @for (r of joinRequests.value()!; track r.id) {
+                  <tr>
+                    <td class="mono">{{ r.address }}</td>
+                    <td>{{ r.message || '—' }}</td>
+                    <td><span class="badge">{{ r.status }}</span></td>
+                    <td class="muted">{{ r.createdAt | timeAgo }}</td>
+                    <td class="actions">
+                      @if (r.status === 'pending') {
+                        <button mat-icon-button color="primary" (click)="decide(r.id, true)" matTooltip="Approve"><mat-icon>check</mat-icon></button>
+                        <button mat-icon-button color="warn" (click)="decide(r.id, false)" matTooltip="Reject"><mat-icon>close</mat-icon></button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <app-empty message="No join requests" />
+        }
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Open invite link</h2>
+        @if (inviteStatus.value()?.active) {
+          <div class="row">
+            <code class="mono invite-link">{{ inviteStatus.value()!.link }}</code>
+            <button mat-button (click)="copyInvite()"><mat-icon>content_copy</mat-icon> Copy</button>
+            <button mat-button color="warn" (click)="revokeInvite()">Revoke</button>
+          </div>
+          <p class="muted">
+            expires {{ inviteStatus.value()!.expiresAt | timeAgo }}
+            {{ inviteStatus.value()!.approvalRequired ? '· approval required' : '' }}
+          </p>
+        } @else {
+          <form [formGroup]="inviteForm" (ngSubmit)="createInvite()" class="inline-form">
+            <mat-form-field>
+              <mat-label>TTL</mat-label>
+              <mat-select formControlName="ttl">
+                <mat-option value="1h">1 hour</mat-option>
+                <mat-option value="24h">24 hours</mat-option>
+                <mat-option value="7d">7 days</mat-option>
+                <mat-option value="30d">30 days</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-checkbox formControlName="approvalRequired" class="check">Require approval</mat-checkbox>
+            <button mat-flat-button color="primary" type="submit">Create invite</button>
+          </form>
+        }
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Settings</h2>
+        <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="settings-form">
+          <mat-form-field>
+            <mat-label>Round reset preset</mat-label>
+            <input matInput formControlName="preset" placeholder="e.g. weekly" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Interval days</mat-label>
+            <input matInput type="number" formControlName="intervalDays" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Timezone</mat-label>
+            <input matInput formControlName="timezone" placeholder="UTC" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Finder bonus (ppm)</mat-label>
+            <input matInput type="number" formControlName="finderBonusPpm" />
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Max members</mat-label>
+            <input matInput type="number" formControlName="maxMembers" />
+          </mat-form-field>
+          <div class="check-row">
+            <mat-checkbox formControlName="isPublic">Listed publicly</mat-checkbox>
+            <mat-checkbox formControlName="resetRoundOnBlock">Reset round on block</mat-checkbox>
+          </div>
+          <div><button mat-flat-button color="primary" type="submit">Save settings</button></div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Transfer ownership</h2>
+        <form [formGroup]="transferForm" (ngSubmit)="transferOwnership()" class="inline-form">
+          <mat-form-field>
+            <mat-label>New admin address</mat-label>
+            <input matInput formControlName="toAddress" class="mono" />
+          </mat-form-field>
+          <button mat-stroked-button color="warn" type="submit" [disabled]="transferForm.invalid">
+            Transfer
+          </button>
+        </form>
+      </section>
+
+      <section class="panel danger">
+        <h2 class="panel-title">Danger zone</h2>
+        <button mat-stroked-button color="warn" (click)="dissolve()">Dissolve group</button>
+      </section>
+    }
+  } @else {
+    <app-empty
+      [loading]="detail.isLoading() || publicDetail.isLoading()"
+      [error]="detail.error() && publicDetail.error() ? 'Group not found' : null"
+    />
+  }
+</div>

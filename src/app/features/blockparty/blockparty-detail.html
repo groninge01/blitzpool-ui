@@ -1,0 +1,189 @@
+<div class="page">
+  @if (detail.value(); as g) {
+    <header class="bp-head">
+      <h1 class="page-title"><mat-icon>celebration</mat-icon> {{ g.name }}</h1>
+      <div class="badges">
+        <span class="badge badge-primary">{{ g.status }}</span>
+        @if (adminToken()) { <span class="badge badge-primary">admin</span> }
+        @if (g.rentalProviderHint) { <span class="badge">rental: {{ g.rentalProviderHint }}</span> }
+      </div>
+    </header>
+    <p class="muted">
+      created {{ fmt.timeAgo(g.createdAt) }}
+      @if (g.lastShareAt) { · last share {{ fmt.timeAgo(g.lastShareAt) }} }
+      @if (g.dissolvedAt) { · dissolved {{ fmt.timeAgo(g.dissolvedAt) }} }
+      @if (g.confirmationRequestedAt) { · confirmation requested {{ fmt.timeAgo(g.confirmationRequestedAt) }} }
+    </p>
+
+    <section class="panel">
+      <h2 class="panel-title">Members &amp; splits</h2>
+      @if (g.members.length) {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Address</th><th>Share</th><th>Role</th><th>Confirmed</th><th></th></tr>
+            </thead>
+            <tbody>
+              @for (m of g.members; track m.address) {
+                <tr>
+                  <td class="mono">
+                    {{ adminToken() ? m.address : (m.address | maskAddress) }}
+                    @if (m.verifiedVia) {
+                      <mat-icon class="verified" [matTooltip]="'Verified via ' + m.verifiedVia">verified</mat-icon>
+                    }
+                  </td>
+                  <td class="mono">{{ (m.percentBp / 100).toFixed(2) }}%</td>
+                  <td><span class="badge">{{ m.role }}</span></td>
+                  <td>
+                    @if (m.confirmed) { <mat-icon class="ok">check_circle</mat-icon> }
+                    @else {
+                      <span class="muted">pending</span>
+                      <button mat-button (click)="reconfirm(m.address)">Confirm as member</button>
+                    }
+                  </td>
+                  <td>
+                    @if (adminToken() && m.role !== 'admin') {
+                      <button mat-icon-button color="warn" (click)="removeMember(m.address)" matTooltip="Remove member">
+                        <mat-icon>person_remove</mat-icon>
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <app-empty message="No members" />
+      }
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-title">Block history</h2>
+      @if (history.value()?.length) {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Block</th><th>Value</th><th>Pool fee</th><th>Found</th></tr></thead>
+            <tbody>
+              @for (h of history.value()!; track h.blockHeight) {
+                <tr>
+                  <td class="mono">#{{ h.blockHeight }}</td>
+                  <td class="mono">{{ h.coinbaseValueSats | sats }}</td>
+                  <td class="mono">{{ h.poolFeeSats | sats }}</td>
+                  <td class="muted">{{ fmt.timeAgo(h.foundAt) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <app-empty [loading]="history.isLoading()" message="No blocks found yet" />
+      }
+    </section>
+
+    @if (!adminToken() && !viewerAddress()) {
+      <div class="two-col">
+        <section class="panel">
+          <h2 class="panel-title">Member view</h2>
+          <p class="muted">Enter your payout address to see your member row.</p>
+          <form [formGroup]="viewerForm" (ngSubmit)="applyViewer()" class="inline-form">
+            <mat-form-field>
+              <mat-label>Address</mat-label>
+              <input matInput formControlName="address" class="mono" />
+            </mat-form-field>
+            <button mat-stroked-button type="submit">View</button>
+          </form>
+        </section>
+        <section class="panel">
+          <h2 class="panel-title">Admin access</h2>
+          <form [formGroup]="tokenForm" (ngSubmit)="applyToken()" class="inline-form">
+            <mat-form-field>
+              <mat-label>Admin token</mat-label>
+              <input matInput formControlName="token" type="password" class="mono" />
+            </mat-form-field>
+            <button mat-stroked-button type="submit">Use token</button>
+          </form>
+        </section>
+      </div>
+    }
+
+    @if (adminToken()) {
+      <section class="panel">
+        <h2 class="panel-title">Edit splits</h2>
+        <p class="muted">Shares in basis points — must total 10,000 (100%).</p>
+        <form [formGroup]="splitsForm" (ngSubmit)="saveSplits()">
+          @for (row of splitsRows.controls; track $index) {
+            <div [formGroup]="row" class="split-row">
+              <mat-form-field class="grow">
+                <mat-label>Address</mat-label>
+                <input matInput formControlName="address" class="mono" />
+              </mat-form-field>
+              <mat-form-field class="bp-field">
+                <mat-label>bp</mat-label>
+                <input matInput type="number" formControlName="percentBp" />
+              </mat-form-field>
+              <button mat-icon-button type="button" (click)="removeSplitRow($index)"><mat-icon>delete</mat-icon></button>
+            </div>
+          }
+          <div class="row">
+            <button mat-button type="button" (click)="addSplitRow()"><mat-icon>add</mat-icon> Add row</button>
+            <span class="muted" [class.over]="totalBp() !== 10000">total: {{ totalBp() }} bp</span>
+          </div>
+          <button mat-flat-button color="primary" type="submit" [disabled]="totalBp() !== 10000">
+            Save splits
+          </button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Join link</h2>
+        @if (joinLink.value()?.active) {
+          <div class="row">
+            <code class="mono invite-link">{{ joinLinkUrl() }}</code>
+            <button mat-button (click)="copyJoinLink()"><mat-icon>content_copy</mat-icon> Copy</button>
+            <button mat-button color="warn" (click)="revokeLink()">Revoke</button>
+          </div>
+          <p class="muted">expires {{ fmt.timeAgo(joinLink.value()!.expiresAt!) }}</p>
+        } @else {
+          <form [formGroup]="linkForm" (ngSubmit)="createLink()" class="inline-form">
+            <mat-form-field>
+              <mat-label>TTL</mat-label>
+              <mat-select formControlName="ttl">
+                <mat-option value="1h">1 hour</mat-option>
+                <mat-option value="24h">24 hours</mat-option>
+                <mat-option value="7d">7 days</mat-option>
+                <mat-option value="30d">30 days</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button mat-flat-button color="primary" type="submit">Create link</button>
+          </form>
+        }
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Rental provider hint</h2>
+        <form [formGroup]="hintForm" (ngSubmit)="saveHint()" class="inline-form">
+          <mat-form-field class="grow">
+            <mat-label>Hint (e.g. rig-rental reference)</mat-label>
+            <input matInput formControlName="hint" />
+          </mat-form-field>
+          <button mat-stroked-button type="submit">Save</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Lifecycle</h2>
+        <div class="row">
+          <button mat-stroked-button (click)="requestConfirmation()">Request member confirmation</button>
+          <button mat-stroked-button (click)="transitionConfirming()">Move to confirming</button>
+          <button mat-stroked-button color="warn" (click)="dissolve()">Dissolve party</button>
+        </div>
+      </section>
+    }
+  } @else {
+    <app-empty
+      [loading]="detail.isLoading()"
+      [error]="detail.error() ? 'Blockparty not found' : null"
+    />
+  }
+</div>

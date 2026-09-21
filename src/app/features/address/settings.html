@@ -1,0 +1,175 @@
+<section class="panel">
+  <h2 class="panel-title">Address ownership</h2>
+  @if (ownership.value(); as o) {
+    <p>
+      Status:
+      @if (o.verified) {
+        <span class="badge badge-ok">verified via {{ o.method }}</span>
+        <span class="muted"> {{ o.verifiedAt | timeAgo }}</span>
+      } @else {
+        <span class="badge">not verified</span>
+      }
+    </p>
+  }
+  @if (verified.value(); as v) {
+    <p class="muted">
+      Email verified: {{ v.emailVerified ? 'yes' : 'no' }} ·
+      Signature verified: {{ v.signatureVerified ? 'yes' : 'no' }}
+    </p>
+  }
+
+  @if (!challenge()) {
+    <button mat-stroked-button (click)="startOwnershipChallenge()">
+      <mat-icon>draw</mat-icon> Prove ownership (sign a message)
+    </button>
+  } @else {
+    <div class="challenge-box">
+      <p class="muted">Sign this exact message with your wallet, then paste the signature:</p>
+      <code class="mono challenge-msg">{{ challenge()!.message }}</code>
+      <div class="row">
+        <button mat-button (click)="copyChallenge()"><mat-icon>content_copy</mat-icon> Copy</button>
+        <span class="muted">expires {{ fmt.timeAgo(challenge()!.expiresAt) }}</span>
+      </div>
+      <form [formGroup]="signatureForm" (ngSubmit)="submitOwnershipProof()" class="sig-form">
+        <mat-form-field>
+          <mat-label>Signature (base64 / BIP-322)</mat-label>
+          <textarea matInput formControlName="signature" rows="3"></textarea>
+        </mat-form-field>
+        <button mat-flat-button color="primary" type="submit" [disabled]="signatureForm.invalid || proving()">
+          Verify
+        </button>
+      </form>
+    </div>
+  }
+</section>
+
+<section class="panel">
+  <h2 class="panel-title">Custom extranonce</h2>
+  <p class="muted">
+    Pin an 8-hex-char extranonce prefix per worker. Mint a bearer token by signing a challenge once;
+    it's stored only in this browser.
+  </p>
+
+  @if (extranonceToken()) {
+    <p><span class="badge badge-ok">token stored</span></p>
+    <form [formGroup]="enSetForm" (ngSubmit)="setExtranonce()" class="inline-form">
+      <mat-form-field>
+        <mat-label>Worker name</mat-label>
+        <input matInput formControlName="worker" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Extranonce (8 hex)</mat-label>
+        <input matInput formControlName="extranonce" placeholder="deadbeef" maxlength="8" />
+      </mat-form-field>
+      <button mat-flat-button color="primary" type="submit" [disabled]="enSetForm.invalid || enBusy()">
+        Set
+      </button>
+    </form>
+  } @else if (!enChallenge()) {
+    <button mat-stroked-button (click)="startExtranonceChallenge()">
+      <mat-icon>vpn_key</mat-icon> Mint token (sign a message)
+    </button>
+  } @else {
+    <div class="challenge-box">
+      <p class="muted">Sign this message, then paste the signature to mint your token:</p>
+      <code class="mono challenge-msg">{{ enChallenge()!.message }}</code>
+      <button mat-button (click)="copyEnChallenge()"><mat-icon>content_copy</mat-icon> Copy</button>
+      <form [formGroup]="enTokenForm" (ngSubmit)="mintExtranonceToken()" class="sig-form">
+        <mat-form-field>
+          <mat-label>Signature</mat-label>
+          <textarea matInput formControlName="signature" rows="3"></textarea>
+        </mat-form-field>
+        <button mat-flat-button color="primary" type="submit" [disabled]="enTokenForm.invalid || enBusy()">
+          Mint token
+        </button>
+      </form>
+    </div>
+  }
+</section>
+
+<section class="panel">
+  <h2 class="panel-title">Email notifications</h2>
+  @if (email.value()?.email; as e) {
+    <p>
+      Registered: <strong>{{ e }}</strong>
+      @if (email.value()?.verifiedAt) {
+        <span class="badge badge-ok">verified</span>
+      } @else {
+        <span class="badge badge-warn">unverified — check your inbox</span>
+      }
+    </p>
+  }
+  <form [formGroup]="emailForm" (ngSubmit)="registerEmail()" class="inline-form">
+    <mat-form-field>
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email" placeholder="you@example.com" />
+    </mat-form-field>
+    <button mat-flat-button color="primary" type="submit" [disabled]="emailForm.invalid || emailBusy()">
+      Register
+    </button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2 class="panel-title">Push notifications</h2>
+  @if (push.value(); as p) {
+    @if (p.subscriptions.length) {
+      <div class="table-wrap" style="margin-bottom: 16px">
+        <table class="data-table">
+          <thead>
+            <tr><th>Platform</th><th>Type</th><th>Alerts</th><th>Registered</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (s of p.subscriptions; track s.id) {
+              <tr>
+                <td>{{ s.platform }}</td>
+                <td>{{ s.subscriptionType }}</td>
+                <td class="muted">
+                  {{ s.bestDiffNotificationsEnabled ? 'best-diff ' : '' }}{{ s.deviceNotificationsEnabled ? 'device ' : '' }}{{ s.blockNotificationsEnabled ? 'block' : '' }}
+                </td>
+                <td class="muted">{{ s.createdAt | timeAgo }}</td>
+                <td>
+                  <button mat-button color="warn" (click)="unregisterPush(s.endpoint)">Remove</button>
+                  <button mat-button (click)="configurePush(s.endpoint)">Apply prefs below</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    @if (p.tracker) {
+      <p class="muted">Best-difficulty tracker: {{ p.tracker.bestDifficulty }} (checked {{ p.tracker.lastCheckedAt | timeAgo }})</p>
+    }
+  }
+
+  <form [formGroup]="pushForm" (ngSubmit)="registerPush()" class="inline-form">
+    <mat-form-field>
+      <mat-label>Endpoint</mat-label>
+      <input matInput formControlName="endpoint" placeholder="UnifiedPush / ntfy URL" />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Platform</mat-label>
+      <input matInput formControlName="platform" />
+    </mat-form-field>
+    <button mat-flat-button color="primary" type="submit" [disabled]="pushForm.invalid">
+      Subscribe
+    </button>
+  </form>
+
+  <div class="push-flags" [formGroup]="pushFlags">
+    <mat-checkbox formControlName="bestDiffNotifications">Best difficulty</mat-checkbox>
+    <mat-checkbox formControlName="deviceNotifications">Device online/offline</mat-checkbox>
+    <mat-checkbox formControlName="blockNotifications">Block found</mat-checkbox>
+    <mat-checkbox formControlName="networkDiffNotifications">Network difficulty</mat-checkbox>
+  </div>
+</section>
+
+<section class="panel danger">
+  <h2 class="panel-title">Danger zone</h2>
+  <div class="danger-actions">
+    <button mat-stroked-button color="warn" (click)="resetStats()">Reset best difficulty</button>
+    <button mat-stroked-button color="warn" (click)="deleteStats()">Delete statistics</button>
+    <button mat-stroked-button color="warn" (click)="deleteAll()">Delete all data</button>
+  </div>
+</section>

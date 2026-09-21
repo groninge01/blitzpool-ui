@@ -1,0 +1,131 @@
+@if (client.error()) {
+  <app-empty [error]="'Miner not found or stats unavailable yet.'" message="" />
+} @else {
+  <section class="card-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total hashrate</div>
+      <div class="stat-value">{{ fmt.formatHashrate(client.value()?.totalHashrate ?? 0) }}</div>
+      @if (networkDifficulty() && (client.value()?.totalHashrate ?? 0) > 0) {
+        <div class="stat-sub">
+          ~{{ client.value()!.totalHashrate | avgTimeToBlock: networkDifficulty() }} to a block
+        </div>
+      }
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Best difficulty</div>
+      <div class="stat-value">{{ fmt.formatDifficulty(client.value()?.bestDifficulty ?? 0) }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total shares</div>
+      <div class="stat-value">{{ fmt.formatCount(client.value()?.totalShares ?? 0) }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Workers</div>
+      <div class="stat-value">{{ client.value()?.workersCount ?? 0 }}</div>
+      <div class="stat-sub">{{ workerGroups().length }} named</div>
+    </div>
+    @if (mode.value(); as m) {
+      <div class="stat-card">
+        <div class="stat-label">Payout mode</div>
+        <div class="stat-value">
+          <span class="badge" [class.badge-primary]="m.mode === 'pplns'">{{ m.mode }}</span>
+        </div>
+        @if (m.groupId) {
+          <div class="stat-sub"><a [routerLink]="['/groups', m.groupId]">view group</a></div>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Hashrate</h2>
+      <app-range-select [value]="range()" (valueChange)="range.set($event)" />
+    </div>
+    @if (chartConfig(); as cfg) {
+      <app-chart [config]="cfg" />
+    } @else {
+      <app-empty [loading]="client.isLoading()" message="No hashrate data" />
+    }
+  </section>
+
+  @if (blockTemplate.value(); as bt) {
+    <section class="panel">
+      <h2 class="panel-title">If this block hits now</h2>
+      <div class="muted" style="margin-bottom: 12px">
+        Mode: <span class="badge badge-primary">{{ bt.mode }}</span>
+        · coinbase value
+        <strong>{{ fmt.formatSats(coinbaseValue()) }}</strong>
+      </div>
+      @if (bt.payoutInformation.length) {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Address</th><th>Share</th><th>Payout</th></tr></thead>
+            <tbody>
+              @for (p of bt.payoutInformation; track p.address) {
+                <tr>
+                  <td class="mono">{{ p.address | maskAddress }}</td>
+                  <td>{{ p.percent.toFixed(2) }}%</td>
+                  <td class="mono">{{ fmt.formatSats(p.sats) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="muted">Payout preview unavailable — PPLNS window still warming up.</div>
+      }
+    </section>
+  }
+
+  <section class="panel">
+    <h2 class="panel-title">Workers</h2>
+    @if (workerGroups().length) {
+      @for (g of workerGroups(); track g.name) {
+        <div class="worker-group">
+          <a class="worker-name" [routerLink]="['../worker', g.name]">
+            <mat-icon>memory</mat-icon> {{ g.name }}
+          </a>
+          <div class="worker-meta muted">
+            {{ g.sessions.length }} session{{ g.sessions.length === 1 ? '' : 's' }}
+            · {{ fmt.formatHashrate(g.totalHashrate) }}
+            · best {{ fmt.formatDifficulty(g.bestDifficulty) }}
+            @if (g.lastSeen) { · last seen {{ g.lastSeen | timeAgo }} }
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Session</th><th>Hashrate</th><th>Best diff</th><th>Cur diff</th>
+                  <th>Started</th><th>Last seen</th><th>Extranonce</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (w of g.sessions; track w.sessionId) {
+                  <tr
+                    class="clickable"
+                    [routerLink]="['../worker', w.name, w.sessionId]"
+                    [matTooltip]="w.channelCount > 1 ? 'Aggregated connection (' + w.channelCount + ' channels)' : ''"
+                  >
+                    <td class="mono">{{ w.sessionId | slice: 0 : 8 }}</td>
+                    <td class="mono">{{ fmt.formatHashrate(w.hashRate) }}</td>
+                    <td class="mono">{{ fmt.formatDifficulty(toNum(w.bestDifficulty)) }}</td>
+                    <td class="mono">{{ w.currentDifficulty != null ? fmt.formatDifficulty(w.currentDifficulty) : '—' }}</td>
+                    <td class="muted">{{ w.startTime | timeAgo }}</td>
+                    <td class="muted">{{ w.lastSeen | timeAgo }}</td>
+                    <td class="mono">{{ w.extranonce ?? '—' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    } @else {
+      <app-empty
+        [loading]="client.isLoading()"
+        message="No workers connected — point a miner at this address."
+      />
+    }
+  </section>
+}

@@ -1,0 +1,197 @@
+<div class="page">
+  <section class="hero">
+    <h1><mat-icon>bolt</mat-icon> Blitzpool</h1>
+    <p class="muted">Bitcoin mining, solo &amp; PPLNS. Point your miner at a stratum endpoint and watch it here.</p>
+    <div class="stratum-list">
+      <div class="stratum">
+        <span class="muted">Stratum V1</span>
+        <code>stratum+tcp://{{ config.stratumUrl }}</code>
+      </div>
+      @if (config.secureStratumUrl) {
+        <div class="stratum">
+          <span class="muted">Stratum V1 TLS</span>
+          <code>stratum+ssl://{{ config.secureStratumUrl }}</code>
+        </div>
+      }
+      @if (config.stratumV2Url) {
+        <div class="stratum">
+          <span class="muted">Stratum V2</span>
+          <code>{{ config.stratumV2Url }}</code>
+        </div>
+      }
+      @if (config.pplnsStratumUrl) {
+        <div class="stratum">
+          <span class="muted">PPLNS</span>
+          <code>stratum+tcp://{{ config.pplnsStratumUrl }}</code>
+        </div>
+      }
+      @if (config.pplnsDatumUrl) {
+        <div class="stratum">
+          <span class="muted">DATUM</span>
+          <code>{{ config.pplnsDatumUrl }}</code>
+        </div>
+      }
+    </div>
+  </section>
+
+  @if (health.value(); as h) {
+    @if (h.status !== 'healthy') {
+      <div class="error-banner">
+        Pool status: {{ h.status }} — database {{ h.checks.database }},
+        bitcoin {{ h.checks.bitcoin ?? 'n/a' }}, template feed {{ h.checks.tdp ?? 'n/a' }}
+      </div>
+    }
+  }
+
+  <section class="card-grid">
+    <div class="stat-card">
+      <div class="stat-label">Pool hashrate</div>
+      <div class="stat-value">{{ fmt.formatHashrate(pool.value()?.totalHashRate ?? 0) }}</div>
+      <div class="stat-sub">{{ pool.value()?.totalMiners ?? '—' }} miners connected</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Network difficulty</div>
+      <div class="stat-value">{{ fmt.formatDifficulty(networkDifficulty()) }}</div>
+      @if (diffDelta() !== null) {
+        <div class="stat-sub" [class.up]="diffDelta()! > 0" [class.down]="diffDelta()! < 0">
+          {{ diffDelta()! > 0 ? '+' : '' }}{{ diffDelta()!.toFixed(2) }}% last adjustment
+        </div>
+      }
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Block height</div>
+      <div class="stat-value">{{ pool.value()?.blockHeight ?? '—' }}</div>
+      <div class="stat-sub">Pool uptime {{ info.value() ? (info.value()!.uptime | timeAgo) : '—' }} old</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Next block reward</div>
+      <div class="stat-value">{{ fmt.formatSats(reward.value()?.rewardSats) }}</div>
+      @if (reward.value(); as r) {
+        <div class="stat-sub">{{ fmt.formatSats(r.feeSats) }} in fees · height {{ r.height }}</div>
+      }
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Blocks found</div>
+      <div class="stat-value">{{ pool.value()?.blocksFound?.length ?? 0 }}</div>
+      @if (pool.value()?.blocksFound?.length) {
+        <div class="stat-sub">latest #{{ pool.value()!.blocksFound[0].height }}</div>
+      }
+    </div>
+    @if (pplns.value()?.enabled) {
+      <div class="stat-card">
+        <div class="stat-label">PPLNS window</div>
+        <div class="stat-value">{{ fmt.formatCount(pplns.value()!.windowSize) }}</div>
+        <div class="stat-sub">{{ fmt.formatCount(pplns.value()!.totalShares) }} shares · {{ pplns.value()!.minerCount }} miners</div>
+      </div>
+    }
+    @if (networkDifficulty() && (pool.value()?.totalHashRate ?? 0) > 0) {
+      <div class="stat-card">
+        <div class="stat-label">Avg time to block</div>
+        <div class="stat-value">{{ pool.value()!.totalHashRate | avgTimeToBlock: networkDifficulty() }}</div>
+        <div class="stat-sub">at current pool hashrate</div>
+      </div>
+    }
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Pool hashrate</h2>
+      <app-range-select [value]="chartRange()" (valueChange)="chartRange.set($event)" />
+    </div>
+    @if (chartConfig(); as cfg) {
+      <app-chart [config]="cfg" />
+    } @else {
+      <app-empty [loading]="chartData.isLoading()" [error]="chartData.error() ? 'Chart unavailable' : null" message="No chart data" />
+    }
+  </section>
+
+  <section class="panel">
+    <h2 class="panel-title">Hashrate by payout mode (7d)</h2>
+    @if (modeChartConfig(); as cfg) {
+      <app-chart [config]="cfg" />
+    } @else {
+      <app-empty message="No per-mode data yet" />
+    }
+  </section>
+
+  @if (shares.value(); as s) {
+    <section class="panel">
+      <h2 class="panel-title">Share totals</h2>
+      <div class="share-grid">
+        <div><span class="muted">24h</span><strong>{{ fmt.formatCount(s.accepted1d) }} accepted</strong><span class="muted">{{ fmt.formatCount(s.rejected1d) }} rejected</span></div>
+        <div><span class="muted">14d</span><strong>{{ fmt.formatCount(s.accepted14d) }} accepted</strong><span class="muted">{{ fmt.formatCount(s.rejected14d) }} rejected</span></div>
+        <div><span class="muted">30d</span><strong>{{ fmt.formatCount(s.accepted30d) }} accepted</strong><span class="muted">{{ fmt.formatCount(s.rejected30d) }} rejected</span></div>
+        <div><span class="muted">Since last block</span><strong>{{ fmt.formatCount(s.acceptedSinceBlock) }} accepted</strong><span class="muted">{{ fmt.formatCount(s.rejectedSinceBlock) }} rejected</span></div>
+      </div>
+    </section>
+  }
+
+  <div class="two-col">
+    <section class="panel">
+      <h2 class="panel-title">Blocks found</h2>
+      @if (info.value()?.blockData?.length) {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Height</th><th>Miner</th><th>Worker</th></tr></thead>
+            <tbody>
+              @for (b of info.value()!.blockData; track b.height + b.sessionId) {
+                <tr class="clickable" [routerLink]="['/address', b.minerAddress]">
+                  <td class="mono">#{{ b.height }}</td>
+                  <td class="mono">{{ b.minerAddress | maskAddress }}</td>
+                  <td>{{ b.worker || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <app-empty [loading]="info.isLoading()" message="No blocks found yet" />
+      }
+    </section>
+
+    <section class="panel">
+      <h2 class="panel-title">Best difficulty leaderboard</h2>
+      @if (info.value()?.highScores?.length) {
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Difficulty</th><th>Agent</th><th>When</th></tr></thead>
+            <tbody>
+              @for (h of info.value()!.highScores; track $index) {
+                <tr>
+                  <td class="mono">{{ fmt.formatDifficulty(h.bestDifficulty) }}</td>
+                  <td>{{ h.bestDifficultyUserAgent || '—' }}</td>
+                  <td class="muted">{{ h.updatedAt | timeAgo }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <app-empty [loading]="info.isLoading()" message="No high scores yet" />
+      }
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2 class="panel-title">Connected user agents</h2>
+    @if (info.value()?.userAgents?.length) {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>User agent</th><th>Sessions</th><th>Best difficulty</th><th>Hashrate</th></tr></thead>
+          <tbody>
+            @for (a of info.value()!.userAgents; track $index) {
+              <tr>
+                <td>{{ a.userAgent || 'Unknown' }}</td>
+                <td>{{ a.count }}</td>
+                <td class="mono">{{ a.bestDifficulty != null ? fmt.formatDifficulty(a.bestDifficulty) : '—' }}</td>
+                <td class="mono">{{ a.totalHashRate != null ? fmt.formatHashrate(a.totalHashRate) : '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <app-empty [loading]="info.isLoading()" message="No agents connected" />
+    }
+  </section>
+</div>
