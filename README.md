@@ -23,7 +23,7 @@ Run `npm test` (Vitest).
 The app reads `assets/runtime-config.js` at startup, which may define `window.__BLITZPOOL_CONFIG__` with any of:
 
 * `API_URL` – base URL of the blitzpool API (e.g. `http://localhost:3334`); empty means same origin
-* `STRATUM_URL`, `SECURE_STRATUM_URL`, `STRATUM_V2_URL`
+* `STRATUM_URL`, `SECURE_STRATUM_URL`, `STRATUM_V2_URL`, `STRATUM_V2_PUBKEY` (SV2 authority public key shown to miners)
 * `PPLNS_STRATUM_URL`, `PPLNS_SECURE_STRATUM_URL`, `PPLNS_STRATUM_V2_URL`, `PPLNS_DATUM_URL`
 
 When running in Docker these are sourced from `BLITZPOOL_API_URL`, `BLITZPOOL_STRATUM_URL`, etc. When deployed to Cloudflare Pages, set the same `BLITZPOOL_*` env vars and the Pages Function in `functions/assets/runtime-config.js.ts` serves them.

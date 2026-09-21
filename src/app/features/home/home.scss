@@ -42,6 +42,10 @@
     font-family: 'JetBrains Mono', monospace;
     color: var(--mat-sys-primary);
   }
+
+  code.pubkey {
+    overflow-wrap: anywhere;
+  }
 }
 
 .panel-head {
