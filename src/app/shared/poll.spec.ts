@@ -14,4 +14,19 @@ describe('poll', () => {
     TestBed.tick();
     expect(res.value()).toBe(42);
   });
+
+  it('resolves many simultaneous polls like the home page', async () => {
+    const polls = TestBed.runInInjectionContext(() =>
+      Array.from({ length: 11 }, (_, i) =>
+        poll<number | undefined, number>({
+          intervalMs: 60_000,
+          stream: () => of(i).pipe(delay(Math.random() * 50)),
+        }),
+      ),
+    );
+    TestBed.tick();
+    await new Promise((r) => setTimeout(r, 2500));
+    TestBed.tick();
+    polls.forEach((p, i) => expect(p.value()).toBe(i));
+  });
 });
