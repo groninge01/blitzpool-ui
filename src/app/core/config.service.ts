@@ -7,6 +7,7 @@ interface RuntimeConfig {
   STRATUM_URL?: string;
   SECURE_STRATUM_URL?: string;
   STRATUM_V2_URL?: string;
+  STRATUM_V2_PUBKEY?: string;
   PPLNS_STRATUM_URL?: string;
   PPLNS_SECURE_STRATUM_URL?: string;
   PPLNS_STRATUM_V2_URL?: string;
@@ -36,14 +37,15 @@ export class ConfigService {
   }
 
   get secureStratumUrl(): string {
-    return this.resolveHostPort(
-      this.runtime('SECURE_STRATUM_URL') ?? environment.SECURE_STRATUM_URL,
-      4333,
-    );
+    return this.runtime('SECURE_STRATUM_URL') ?? environment.SECURE_STRATUM_URL;
   }
 
   get stratumV2Url(): string {
     return this.runtime('STRATUM_V2_URL') ?? environment.STRATUM_V2_URL;
+  }
+
+  get stratumV2Pubkey(): string {
+    return this.runtime('STRATUM_V2_PUBKEY') ?? environment.STRATUM_V2_PUBKEY;
   }
 
   get pplnsStratumUrl(): string {

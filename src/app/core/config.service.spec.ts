@@ -16,17 +16,19 @@ describe('ConfigService', () => {
   it('falls back to environment values', () => {
     const config = create();
     expect(config.stratumUrl).toBe('localhost:3333');
-    expect(config.secureStratumUrl).toBe('localhost:4333');
+    expect(config.secureStratumUrl).toBe('');
   });
 
   it('prefers runtime config over environment', () => {
     window.__BLITZPOOL_CONFIG__ = {
       API_URL: 'https://pool.example.com/',
       STRATUM_URL: 'stratum.example.com:3333',
+      STRATUM_V2_PUBKEY: 'poolkey123',
     };
     const config = create();
     expect(config.apiUrl).toBe('https://pool.example.com');
     expect(config.stratumUrl).toBe('stratum.example.com:3333');
+    expect(config.stratumV2Pubkey).toBe('poolkey123');
   });
 
   it('ignores blank runtime values', () => {

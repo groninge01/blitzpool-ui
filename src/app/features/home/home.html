@@ -16,7 +16,11 @@
       @if (config.stratumV2Url) {
         <div class="stratum">
           <span class="muted">Stratum V2</span>
-          <code>{{ config.stratumV2Url }}</code>
+          <code>stratum2+tcp://{{ config.stratumV2Url }}</code>
+          @if (config.stratumV2Pubkey) {
+            <span class="muted">Authority public key</span>
+            <code class="pubkey">{{ config.stratumV2Pubkey }}</code>
+          }
         </div>
       }
       @if (config.pplnsStratumUrl) {
