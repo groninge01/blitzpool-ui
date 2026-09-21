@@ -16,6 +16,11 @@ services:
     image: blitzpool-ui:latest
     container_name: blitzpool-ui
     restart: unless-stopped
+    env_file:
+      # Runtime overrides (BLITZPOOL_* -> assets/runtime-config.js).
+      # Optional: missing file is fine, defaults still apply.
+      - path: .env
+        required: false
     ports:
       - "${UI_PORT:-8080}:80"
     environment:
@@ -24,12 +29,10 @@ services:
       - LOGLEVEL=${LOGLEVEL:-INFO}
       - LOGFORMAT=${LOGFORMAT:-json}
       # Optional runtime overrides written into __BLITZPOOL_CONFIG__.
+      # Set BLITZPOOL_* vars in .env (see env_file above), e.g.
+      #   BLITZPOOL_STRATUM_URL=pool.example.com:3333
       # API_URL is normally left unset (same-origin /api proxy handles it);
       # set BLITZPOOL_API_URL only if browsers should call the API directly.
-      # - BLITZPOOL_API_URL=
-      # - BLITZPOOL_STRATUM_URL=pool.example.com:3333
-      # - BLITZPOOL_SECURE_STRATUM_URL=pool.example.com:4333
-      # - BLITZPOOL_STRATUM_V2_URL=pool.example.com:23330
     networks:
       - blitzpool
     logging:
