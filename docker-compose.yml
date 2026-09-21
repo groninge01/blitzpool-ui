@@ -1,0 +1,47 @@
+# Standalone UI container for blitzpool-server-rust.
+#
+# Joins the `blitzpool` docker network created by the server's
+# full-setup/docker-compose.yml, so the API is reachable in-network
+# at http://blitzpool-api:3334. This file is intentionally separate:
+# run it alongside, not inside, the core stack.
+#
+#   docker compose up -d --build
+#
+# The UI listens on http://localhost:8080 by default. Browser requests
+# to /api/* are reverse-proxied by Caddy to API_UPSTREAM in-network.
+
+services:
+  blitzpool-ui:
+    build: .
+    image: blitzpool-ui:latest
+    container_name: blitzpool-ui
+    restart: unless-stopped
+    ports:
+      - "${UI_PORT:-8080}:80"
+    environment:
+      # In-network upstream for the /api reverse proxy.
+      - API_UPSTREAM=${API_UPSTREAM:-blitzpool-api:3334}
+      - LOGLEVEL=${LOGLEVEL:-INFO}
+      - LOGFORMAT=${LOGFORMAT:-json}
+      # Optional runtime overrides written into __BLITZPOOL_CONFIG__.
+      # API_URL is normally left unset (same-origin /api proxy handles it);
+      # set BLITZPOOL_API_URL only if browsers should call the API directly.
+      # - BLITZPOOL_API_URL=
+      # - BLITZPOOL_STRATUM_URL=pool.example.com:3333
+      # - BLITZPOOL_SECURE_STRATUM_URL=pool.example.com:4333
+      # - BLITZPOOL_STRATUM_V2_URL=pool.example.com:23330
+    networks:
+      - blitzpool
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  # Created by blitzpool-server-rust/full-setup/docker-compose.yml.
+  # `external` keeps this stack standalone: `docker compose down` here
+  # never touches the core network or containers.
+  blitzpool:
+    external: true
+    name: blitzpool
