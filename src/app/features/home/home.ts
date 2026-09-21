@@ -79,6 +79,12 @@ export class HomeComponent {
     stream: () => this.poolApi.chartByMode('pplns', '7d'),
   });
 
+  protected readonly connectedMiners = computed(() => {
+    const agents = this.info.value()?.userAgents;
+    if (!agents) return null;
+    return agents.reduce((sum, a) => sum + a.count, 0);
+  });
+
   protected readonly networkDifficulty = computed(() => {
     const d = this.difficulty.value()?.current ?? this.network.value()?.difficulty;
     return typeof d === 'number' ? d : 0;

@@ -45,7 +45,7 @@
     <div class="stat-card">
       <div class="stat-label">Pool hashrate</div>
       <div class="stat-value">{{ fmt.formatHashrate(pool.value()?.totalHashRate ?? 0) }}</div>
-      <div class="stat-sub">{{ pool.value()?.totalMiners ?? '—' }} miners connected</div>
+      <div class="stat-sub">{{ connectedMiners() ?? '—' }} miners connected</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Network difficulty</div>
