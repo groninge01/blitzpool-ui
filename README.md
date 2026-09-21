@@ -23,8 +23,8 @@ Run `npm test` (Vitest).
 The app reads `assets/runtime-config.js` at startup, which may define `window.__BLITZPOOL_CONFIG__` with any of:
 
 * `API_URL` – base URL of the blitzpool API (e.g. `http://localhost:3334`); empty means same origin
-* `STRATUM_URL`, `SECURE_STRATUM_URL`, `STRATUM_V2_URL`, `STRATUM_V2_PUBKEY` (SV2 authority public key shown to miners)
-* `PPLNS_STRATUM_URL`, `PPLNS_SECURE_STRATUM_URL`, `PPLNS_STRATUM_V2_URL`, `PPLNS_DATUM_URL`
+* `STRATUM_URL`, `STRATUM_V2_URL`, `STRATUM_V2_PUBKEY` (SV2 authority public key shown to miners)
+* `PPLNS_STRATUM_URL`, `PPLNS_STRATUM_V2_URL`, `PPLNS_DATUM_URL`
 
 When running in Docker these are sourced from `BLITZPOOL_API_URL`, `BLITZPOOL_STRATUM_URL`, etc. When deployed to Cloudflare Pages, set the same `BLITZPOOL_*` env vars and the Pages Function in `functions/assets/runtime-config.js.ts` serves them.
 
@@ -65,6 +65,6 @@ The site will be accessible on [http://localhost:8080](http://localhost:8080). C
 
 Available variables:
 * `API_UPSTREAM` – in-network `host:port` for the `/api` reverse proxy (default: `blitzpool-api:3334`)
-* `BLITZPOOL_API_URL`, `BLITZPOOL_STRATUM_URL`, `BLITZPOOL_SECURE_STRATUM_URL`, `BLITZPOOL_STRATUM_V2_URL`, `BLITZPOOL_PPLNS_*` – injected into the runtime config; only needed to override the same-origin proxy or advertise public stratum endpoints
+* `BLITZPOOL_API_URL`, `BLITZPOOL_STRATUM_URL`, `BLITZPOOL_STRATUM_V2_URL`, `BLITZPOOL_STRATUM_V2_PUBKEY`, `BLITZPOOL_PPLNS_*` – injected into the runtime config; only needed to override the same-origin proxy or advertise public stratum endpoints
 * `LOGLEVEL`: loglevel in stdout (default: `INFO`)
 * `LOGFORMAT`: log format in stdout (default: `json`)

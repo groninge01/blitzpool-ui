@@ -5,11 +5,9 @@ import { environment } from '../../environments/environment';
 interface RuntimeConfig {
   API_URL?: string;
   STRATUM_URL?: string;
-  SECURE_STRATUM_URL?: string;
   STRATUM_V2_URL?: string;
   STRATUM_V2_PUBKEY?: string;
   PPLNS_STRATUM_URL?: string;
-  PPLNS_SECURE_STRATUM_URL?: string;
   PPLNS_STRATUM_V2_URL?: string;
   PPLNS_DATUM_URL?: string;
 }
@@ -36,10 +34,6 @@ export class ConfigService {
     return this.resolveHostPort(this.runtime('STRATUM_URL') ?? environment.STRATUM_URL, 3333);
   }
 
-  get secureStratumUrl(): string {
-    return this.runtime('SECURE_STRATUM_URL') ?? environment.SECURE_STRATUM_URL;
-  }
-
   get stratumV2Url(): string {
     return this.runtime('STRATUM_V2_URL') ?? environment.STRATUM_V2_URL;
   }
@@ -50,10 +44,6 @@ export class ConfigService {
 
   get pplnsStratumUrl(): string {
     return this.runtime('PPLNS_STRATUM_URL') ?? environment.PPLNS_STRATUM_URL;
-  }
-
-  get pplnsSecureStratumUrl(): string {
-    return this.runtime('PPLNS_SECURE_STRATUM_URL') ?? environment.PPLNS_SECURE_STRATUM_URL;
   }
 
   get pplnsStratumV2Url(): string {
