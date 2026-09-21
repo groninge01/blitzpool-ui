@@ -6,8 +6,8 @@
       "name": "ng serve",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:4200/",
-      "sourceMaps": true
+      "preLaunchTask": "npm: start",
+      "url": "http://localhost:4200/"
     },
     {
       "name": "ng test",

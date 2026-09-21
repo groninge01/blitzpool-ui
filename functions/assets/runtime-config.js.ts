@@ -3,29 +3,29 @@ function hasOwn(env, key) {
 }
 
 const runtimeEnvMap = {
-  PUBLIC_POOL_API_URL: 'API_URL',
-  PUBLIC_POOL_STRATUM_URL: 'STRATUM_URL',
-  PUBLIC_POOL_SECURE_STRATUM_URL: 'SECURE_STRATUM_URL',
-  PUBLIC_POOL_STRATUM_V2_URL: 'STRATUM_V2_URL',
-  PUBLIC_POOL_PPLNS_STRATUM_URL: 'PPLNS_STRATUM_URL',
-  PUBLIC_POOL_PPLNS_SECURE_STRATUM_URL: 'PPLNS_SECURE_STRATUM_URL',
-  PUBLIC_POOL_PPLNS_STRATUM_V2_URL: 'PPLNS_STRATUM_V2_URL',
-  PUBLIC_POOL_PPLNS_DATUM_URL: 'PPLNS_DATUM_URL'
+  BLITZPOOL_API_URL: 'API_URL',
+  BLITZPOOL_STRATUM_URL: 'STRATUM_URL',
+  BLITZPOOL_SECURE_STRATUM_URL: 'SECURE_STRATUM_URL',
+  BLITZPOOL_STRATUM_V2_URL: 'STRATUM_V2_URL',
+  BLITZPOOL_PPLNS_STRATUM_URL: 'PPLNS_STRATUM_URL',
+  BLITZPOOL_PPLNS_SECURE_STRATUM_URL: 'PPLNS_SECURE_STRATUM_URL',
+  BLITZPOOL_PPLNS_STRATUM_V2_URL: 'PPLNS_STRATUM_V2_URL',
+  BLITZPOOL_PPLNS_DATUM_URL: 'PPLNS_DATUM_URL'
 };
 
-const publicPoolDefaults = {
-  API_URL: 'https://public-pool.io:40557',
-  STRATUM_URL: 'public-pool.io:3333',
-  SECURE_STRATUM_URL: 'public-pool.io:4333',
-  STRATUM_V2_URL: 'public-pool.io:23330',
-  PPLNS_STRATUM_URL: 'public-pool.io:13333',
-  PPLNS_SECURE_STRATUM_URL: 'public-pool.io:14333',
-  PPLNS_STRATUM_V2_URL: 'public-pool.io:23331',
-  PPLNS_DATUM_URL: 'public-pool.io:23336'
+const blitzpoolDefaults = {
+  API_URL: '',
+  STRATUM_URL: '',
+  SECURE_STRATUM_URL: '',
+  STRATUM_V2_URL: '',
+  PPLNS_STRATUM_URL: '',
+  PPLNS_SECURE_STRATUM_URL: '',
+  PPLNS_STRATUM_V2_URL: '',
+  PPLNS_DATUM_URL: ''
 };
 
 export function onRequestGet(context) {
-  const config = { ...publicPoolDefaults };
+  const config = { ...blitzpoolDefaults };
 
   for (const [envKey, configKey] of Object.entries(runtimeEnvMap)) {
     if (hasOwn(context.env, envKey)) {
@@ -34,7 +34,7 @@ export function onRequestGet(context) {
   }
 
   return new Response(
-    `window.__PUBLIC_POOL_CONFIG__ = ${JSON.stringify(config)};\n`,
+    `window.__BLITZPOOL_CONFIG__ = ${JSON.stringify(config)};\n`,
     {
       headers: {
         'content-type': 'application/javascript; charset=utf-8',

@@ -31,4 +31,4 @@ jobs:
           push: false
           load: true
           platforms: linux/amd64
-          tags: public-pool-ui:amd64
+          tags: blitzpool-ui:amd64

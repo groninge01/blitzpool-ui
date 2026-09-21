@@ -1,0 +1,80 @@
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+
+.gd-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-weight: 700;
+  margin: 0;
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 24px;
+}
+
+.inline-form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  button { margin-top: 8px; }
+  .check { margin-top: 14px; }
+}
+
+.settings-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px 16px;
+  .check-row { display: flex; gap: 20px; align-items: center; }
+}
+
+.invite-link {
+  word-break: break-all;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-surface-container-highest);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.verified {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: var(--mat-sys-primary);
+  vertical-align: text-bottom;
+}
+
+.actions {
+  white-space: nowrap;
+}
+
+.panel.danger {
+  border-color: color-mix(in srgb, var(--mat-sys-error) 35%, transparent);
+}
+
+@media (max-width: 900px) {
+  .two-col { grid-template-columns: 1fr; }
+}

@@ -25,12 +25,12 @@ jobs:
         with:
           push: false
           load: true
-          tags: public-pool-ui:trivy
+          tags: blitzpool-ui:trivy
       - 
         name: Run Trivy vulnerability scanner against "latest" image
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: public-pool-ui:trivy
+          image-ref: blitzpool-ui:trivy
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
