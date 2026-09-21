@@ -53,7 +53,7 @@ import { BtcPipe, SatsPipe, TimeAgoPipe } from '../../shared/pipes';
                     <td class="mono">{{ h.paidSats | sats }}</td>
                     <td>{{ h.percent.toFixed(2) }}%</td>
                     <td><span class="badge">{{ h.rowType }}</span></td>
-                    <td class="muted" [title]="h.createdAt | date: 'medium'">{{ h.createdAt | timeAgo }}</td>
+                    <td class="muted" [title]="h.createdAt | date: 'MMM d, y, HH:mm:ss'">{{ h.createdAt | timeAgo }}</td>
                   </tr>
                 }
               </tbody>

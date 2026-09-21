@@ -11,7 +11,7 @@ import { PoolApi } from '../../core/api/pool.service';
 import { PplnsApi } from '../../core/api/pplns.service';
 import { RangeParam, WorkerEntry } from '../../core/api/models';
 import { poll } from '../../shared/poll';
-import { ChartComponent } from '../../shared/chart.component';
+import { ChartComponent, TIME_SCALE_24H } from '../../shared/chart.component';
 import { RangeSelectComponent } from '../../shared/range-select.component';
 import { EmptyComponent } from '../../shared/empty.component';
 import {
@@ -162,6 +162,7 @@ export class AddressOverviewComponent {
         scales: {
           x: {
             type: 'time',
+            time: TIME_SCALE_24H,
             ticks: { color: '#a8a29e', maxTicksLimit: 8 },
             grid: { color: 'rgba(128,128,128,0.12)' },
           },
