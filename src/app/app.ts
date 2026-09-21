@@ -41,6 +41,7 @@ export class App {
 
   constructor() {
     this.store.applyTheme();
+    this.search.valueChanges.subscribe(() => this.searchInvalid.set(false));
   }
 
   protected toggleTheme(): void {
