@@ -1,6 +1,6 @@
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Observable, timer } from 'rxjs';
-import { switchMap, timeout } from 'rxjs/operators';
+import { retry, switchMap, timeout } from 'rxjs/operators';
 
 /**
  * rxResource treats `params() === undefined` as "idle" and never
@@ -31,6 +31,8 @@ export function poll<P, T>(opts: {
   return rxResource<T, P>({
     params: opts.params ?? (() => NO_PARAMS as P),
     stream: ({ params }) =>
-      timer(offset, intervalMs).pipe(switchMap(() => opts.stream(params).pipe(timeout(30_000)))),
+      timer(offset, intervalMs).pipe(
+        switchMap(() => opts.stream(params).pipe(timeout(15_000), retry({ count: 2, delay: 1_000 }))),
+      ),
   });
 }

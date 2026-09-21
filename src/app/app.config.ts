@@ -3,7 +3,7 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
 } from '@angular/core';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import {
   provideRouter,
   withComponentInputBinding,
@@ -19,7 +19,9 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
-    provideHttpClient(withFetch()),
+    // XHR backend on purpose: the fetch backend stalled requests under
+    // connection contention on cold loads (resources stuck "loading").
+    provideHttpClient(),
     provideRouter(
       routes,
       withComponentInputBinding(),
