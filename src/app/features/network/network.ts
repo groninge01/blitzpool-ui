@@ -4,7 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { PoolApi } from '../../core/api/pool.service';
 import { poll } from '../../shared/poll';
 import { EmptyComponent } from '../../shared/empty.component';
-import { formatCount, formatDifficulty, formatHashrate, formatSats, timeAgo } from '../../shared/format';
+import { formatBtc, formatCount, formatDifficulty, formatHashrate, timeAgo } from '../../shared/format';
 import { BytesPipe, TimeAgoPipe } from '../../shared/pipes';
 
 @Component({
@@ -15,7 +15,7 @@ import { BytesPipe, TimeAgoPipe } from '../../shared/pipes';
     <div class="page">
       <h1 class="page-title"><mat-icon>public</mat-icon> Network</h1>
 
-      <section class="card-grid">
+      <section class="card-grid cols-3">
         <div class="stat-card">
           <div class="stat-label">Node health</div>
           <div class="stat-value">
@@ -53,8 +53,8 @@ import { BytesPipe, TimeAgoPipe } from '../../shared/pipes';
         </div>
         <div class="stat-card">
           <div class="stat-label">Next block reward</div>
-          <div class="stat-value">{{ fmt.formatSats(reward.value()?.rewardSats) }}</div>
-          <div class="stat-sub">subsidy {{ fmt.formatSats(reward.value()?.subsidySats) }}</div>
+          <div class="stat-value">{{ fmt.formatBtc(reward.value()?.rewardSats) }}</div>
+          <div class="stat-sub">subsidy {{ fmt.formatBtc(reward.value()?.subsidySats) }}</div>
         </div>
       </section>
 
@@ -115,7 +115,7 @@ import { BytesPipe, TimeAgoPipe } from '../../shared/pipes';
   `,
 })
 export class NetworkComponent {
-  protected readonly fmt = { formatDifficulty, formatHashrate, formatSats, formatCount, timeAgo };
+  protected readonly fmt = { formatDifficulty, formatHashrate, formatBtc, formatCount, timeAgo };
   private readonly api = inject(PoolApi);
 
   protected readonly health = poll({ intervalMs: 30_000, stream: () => this.api.health() });
