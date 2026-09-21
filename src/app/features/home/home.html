@@ -7,12 +7,6 @@
         <span class="muted">Stratum V1</span>
         <code>stratum+tcp://{{ config.stratumUrl }}</code>
       </div>
-      @if (config.secureStratumUrl) {
-        <div class="stratum">
-          <span class="muted">Stratum V1 TLS</span>
-          <code>stratum+ssl://{{ config.secureStratumUrl }}</code>
-        </div>
-      }
       @if (config.stratumV2Url) {
         <div class="stratum">
           <span class="muted">Stratum V2</span>

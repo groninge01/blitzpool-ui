@@ -16,7 +16,7 @@ describe('ConfigService', () => {
   it('falls back to environment values', () => {
     const config = create();
     expect(config.stratumUrl).toBe('localhost:3333');
-    expect(config.secureStratumUrl).toBe('');
+    expect(config.stratumV2Url).toBe('localhost:23330');
   });
 
   it('prefers runtime config over environment', () => {
