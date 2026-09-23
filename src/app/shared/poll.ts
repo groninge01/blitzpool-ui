@@ -1,3 +1,4 @@
+import { computed } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Observable, timer } from 'rxjs';
 import { retry, switchMap, timeout } from 'rxjs/operators';
@@ -28,11 +29,20 @@ export function poll<P, T>(opts: {
 }) {
   const intervalMs = opts.intervalMs ?? 60_000;
   const offset = (pollOffset++ % 8) * STAGGER_MS;
-  return rxResource<T, P>({
+  const res = rxResource<T, P>({
     params: opts.params ?? (() => NO_PARAMS as P),
     stream: ({ params }) =>
       timer(offset, intervalMs).pipe(
         switchMap(() => opts.stream(params).pipe(timeout(15_000), retry({ count: 2, delay: 1_000 }))),
       ),
+  });
+  // `value()` throws while the resource is in error state; a read in a
+  // template then aborts the whole change-detection pass and freezes every
+  // binding after it. Gate on `status()` (not `hasValue()`, which reads
+  // `value` itself) so errored polls read as `undefined` — same as "still
+  // loading" — while `error()` keeps the cause.
+  const inner = res.value;
+  return Object.assign(res, {
+    value: computed(() => (res.status() === 'error' ? undefined : inner())),
   });
 }
