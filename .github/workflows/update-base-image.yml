@@ -43,7 +43,7 @@ jobs:
       - 
         name: Build and push to GitHub Container Registry
         id: docker_build
-        uses: docker/build-push-action@v5.1.0
+        uses: docker/build-push-action@v5.4.0
         with:
           push: true
           platforms: linux/amd64,linux/arm64
